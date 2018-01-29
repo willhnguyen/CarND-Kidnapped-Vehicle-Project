@@ -1,146 +1,59 @@
-# Overview
-This repository contains all the code needed to complete the final project for the Localization course in Udacity's Self-Driving Car Nanodegree.
+# Kidnapped Vehicle Project
+Self-Driving Car Engineer Nanodegree
 
-#### Submission
-All you will submit is your completed version of `particle_filter.cpp`, which is located in the `src` directory. You should probably do a `git pull` before submitting to verify that your project passes the most up-to-date version of the grading code (there are some parameters in `src/main.cpp` which govern the requirements on accuracy and run time.)
+This project aims to implement a particle filter to provide a car the ability to localize itself with the ability to sense the presence of landmarks nearby.
 
-## Project Introduction
-Your robot has been kidnapped and transported to a new location! Luckily it has a map of this location, a (noisy) GPS estimate of its initial location, and lots of (noisy) sensor and control data.
+## Dependencies
+* cmake >= 3.5
+  * All OSes: [click here for installation instructions](https://cmake.org/install/)
+* make >= 4.1 (Linux, Mac), 3.81 (Windows)
+  * Linux: make is installed by default on most Linux distros
+  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
+  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
+* gcc/g++ >= 5.4
+  * Linux: gcc / g++ is installed by default on most Linux distros
+  * Mac: same deal as make - [install Xcode command line tools](https://developer.apple.com/xcode/features/)
+  * Windows: recommend using [MinGW](http://www.mingw.org/)
 
-In this project you will implement a 2 dimensional particle filter in C++. Your particle filter will be given a map and some initial localization information (analogous to what a GPS would provide). At each time step your filter will also get observation and control data. 
+## Build and Run Instructions
+To build the program, run the following sequence of command line instructions.
 
-## Running the Code
-This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases)
-
-This repository includes two files that can be used to set up and intall uWebSocketIO for either Linux or Mac systems. For windows you can use either Docker, VMware, or even Windows 10 Bash on Ubuntu to install uWebSocketIO.
-
-Once the install for uWebSocketIO is complete, the main program can be built and ran by doing the following from the project top directory.
-
-1. mkdir build
-2. cd build
-3. cmake ..
-4. make
-5. ./particle_filter
-
-Alternatively some scripts have been included to streamline this process, these can be leveraged by executing the following in the top directory of the project:
-
-1. ./clean.sh
-2. ./build.sh
-3. ./run.sh
-
-Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
-
-Note that the programs that need to be written to accomplish the project are src/particle_filter.cpp, and particle_filter.h
-
-The program main.cpp has already been filled out, but feel free to modify it.
-
-Here is the main protcol that main.cpp uses for uWebSocketIO in communicating with the simulator.
-
-INPUT: values provided by the simulator to the c++ program
-
-// sense noisy position data from the simulator
-
-["sense_x"] 
-
-["sense_y"] 
-
-["sense_theta"] 
-
-// get the previous velocity and yaw rate to predict the particle's transitioned state
-
-["previous_velocity"]
-
-["previous_yawrate"]
-
-// receive noisy observation data from the simulator, in a respective list of x/y values
-
-["sense_observations_x"] 
-
-["sense_observations_y"] 
-
-
-OUTPUT: values provided by the c++ program to the simulator
-
-// best particle values used for calculating the error evaluation
-
-["best_particle_x"]
-
-["best_particle_y"]
-
-["best_particle_theta"] 
-
-//Optional message data used for debugging particle's sensing and associations
-
-// for respective (x,y) sensed positions ID label 
-
-["best_particle_associations"]
-
-// for respective (x,y) sensed positions
-
-["best_particle_sense_x"] <= list of sensed x positions
-
-["best_particle_sense_y"] <= list of sensed y positions
-
-
-Your job is to build out the methods in `particle_filter.cpp` until the simulator output says:
-
-```
-Success! Your particle filter passed!
+```bash
+$ cd /path/to/cloned/repo
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
 ```
 
-# Implementing the Particle Filter
-The directory structure of this repository is as follows:
+To see the program in action, make sure to download the [Term 2 simulator](https://github.com/udacity/self-driving-car-sim/releases), run it, and choose the second simulation option. Then, execute the program by executing the `particle_filter` program in the `build` folder.
 
-```
-root
-|   build.sh
-|   clean.sh
-|   CMakeLists.txt
-|   README.md
-|   run.sh
-|
-|___data
-|   |   
-|   |   map_data.txt
-|   
-|   
-|___src
-    |   helper_functions.h
-    |   main.cpp
-    |   map.h
-    |   particle_filter.cpp
-    |   particle_filter.h
+```bash
+$ ./particle_filter
 ```
 
-The only file you should modify is `particle_filter.cpp` in the `src` directory. The file contains the scaffolding of a `ParticleFilter` class and some associated methods. Read through the code, the comments, and the header file `particle_filter.h` to get a sense for what this code is expected to do.
+## Project Information
+In this project, a lost car can sense landmarks and needs to use the landmarks to identify where it is located. To do so, a particle filter will be implemented. The vehicle itself knows the general vicinity of where it is located (i.e. it has the local map through GPS). Note that GPS typically can give the general vicinity but not an accurate location which is desired in this project.
 
-If you are interested, take a look at `src/main.cpp` as well. This file contains the code that will actually be running your particle filter and calling the associated methods.
+Particle filters work by identifying whether a randomly placed state has a high probability of matching the vehicle's current state. The idea is that by collecting data over time, only few positions can correctly correlate to the vehicle's driving history.
 
-## Inputs to the Particle Filter
-You can find the inputs to the particle filter in the `data` directory. 
+To begin, a collection of points (particles so to speak) with random states are initialized and placed in the space. These points include cartesian positions x and y, and a heading orientation theta.
 
-#### The Map*
-`map_data.txt` includes the position of landmarks (in meters) on an arbitrary Cartesian coordinate system. Each row has three columns
-1. x position
-2. y position
-3. landmark id
+To determine whether a point is likely to match the vehicle's state, each of those points undergo a simulation to update its location after some time step. Once the points are updated, the landmarks in range are identified and checked against the landmarks sensed by the actual vehicle. The sensed and expected landmarks are associated with each other by the nearest neighbor approach. Then, this association is used to determine the weight for each point which represents the probability that the point is likely to be the vehicle's current state.
 
-### All other data the simulator provides, such as observations and controls.
+Once each point's weights have been calculated, the collection of points are resampled based on the points' weight distributions. The most likely point isn't chosen because that point might not be the correct point and some uncertainty is welcomed to further narrow down the belief of the vehicle's actual state.
 
-> * Map data provided by 3D Mapping Solutions GmbH.
+The algorithm continuously loops back to the prediction step. However, since some of the resampled points may have the exact same state, some noise is added to the state during the prediction step to add variance to the simulation.
 
-## Success Criteria
-If your particle filter passes the current grading code in the simulator (you can make sure you have the current version at any time by doing a `git pull`), then you should pass! 
+## Project Implementation Details
+The only modified file is the `src/particle_filter.cpp` file. In this file, 5 methods are updated: `init()`, `prediction()`, `dataAssociation()`, `updateWeights()`, and `resample()`.
 
-The things the grading code is looking for are:
+In `init()`, the particle filter is initialized with a collection of particles with random state. The amount of particles to initialize is up to the designer—I chose 100.
 
+In `prediction()`, delta time, velocity, and yaw rate (turn rate) are provided to predict each particle's next state. This uses the equations seen in the previous unscented Kalman filter project. Some variance is added from a Gaussian noise generation.
 
-1. **Accuracy**: your particle filter should localize vehicle position and yaw to within the values specified in the parameters `max_translation_error` and `max_yaw_error` in `src/main.cpp`.
+`dataAssociation()` is required for `updateWeights()` to identify the which expected landmark is most likely the observed landmark. A brute force algorithm is used to scan and identify the closest landmarks to each observation.
 
-2. **Performance**: your particle filter should complete execution within the time of 100 seconds.
+`updateWeights()` use the associated landmarks to calculate a weight for each particle. This weight represents the particle's probability of being the actual vehicle's location.
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
-
-
+In `resample()`, the weights are used to randomly pick a point from the collection of points. The idea is to keep the collection of particles the same size, but keep the most likely ones. A discrete_distribution random number generator is used to properly resample as desired.
